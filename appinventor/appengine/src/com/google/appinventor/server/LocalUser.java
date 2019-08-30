@@ -97,6 +97,46 @@ public class LocalUser implements UserInfoProvider {
       throw new UnsupportedOperationException("User field should have been initialized.");
     }
   }
+  
+  @Override
+  public void enableDrive(boolean value) {
+	try {
+	  user.get().enableDrive(value);
+	} catch (NullPointerException e) {
+	  // This should never happen, but just in case...
+	  throw new UnsupportedOperationException("User field should have been initialized.");
+	}
+  }
+  
+  @Override
+  public boolean isDriveEnabled() {
+	try {
+	  return user.get().isDriveEnabled();
+	} catch (NullPointerException e) {
+	  // This should never happen, but just in case...
+	  throw new UnsupportedOperationException("User field should have been initialized.");
+	}
+  }
+  
+  @Override
+  public void enableDrivePermissionRequests(boolean value) {
+    try {
+	  user.get().enableDrivePermissionRequests(value);
+	  } catch (NullPointerException e) {
+	    // This should never happen, but just in case...
+	    throw new UnsupportedOperationException("User field should have been initialized.");
+	  }
+  }
+  
+  @Override
+  public boolean drivePermissionRequests() {
+	try {
+	  return user.get().drivePermissionRequests();
+	  } catch (NullPointerException e) {
+	    // This should never happen, but just in case...
+		throw new UnsupportedOperationException("User field should have been initialized.");
+	  }
+  }
 
   @Override
   public boolean getUserTosAccepted() throws UnsupportedOperationException {

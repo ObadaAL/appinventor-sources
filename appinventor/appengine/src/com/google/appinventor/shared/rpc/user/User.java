@@ -49,6 +49,12 @@ public class User implements IsSerializable, UserInfoProvider, Serializable {
   private String password;      // Hashed password (if using local login system)
 
   private String backPackId = null; // If non-null we have a shared backpack
+  
+  // Google Drive backup access permission requests
+  private boolean drivePermissionRequests;
+  
+  // Determines whether Drive backup is enabled or not
+  private boolean isDriveEnabled;
 
   public final static String usercachekey = "f682688a-1065-4cda-8515-a8bd70200ac9"; // UUID
   // This UUID is prepended to any key lookup for User objects. Memcache is a common
@@ -82,6 +88,8 @@ public class User implements IsSerializable, UserInfoProvider, Serializable {
     this.emailFrequency = emailFrequency;
     this.type = type;
     this.sessionId = sessionId;
+    this.drivePermissionRequests = true;
+    this.isDriveEnabled = false;
   }
 
   /**
@@ -118,6 +126,45 @@ public class User implements IsSerializable, UserInfoProvider, Serializable {
   public String getUserEmail() {
     return email;
   }
+  
+  /**
+   * Enables or disables Google Drive backup according to value.
+   * 
+   * @param value true to enable Drive backup and false to disable it
+   */
+  @Override
+  public void enableDrive(boolean value) {
+	this.isDriveEnabled = value;
+  }
+  
+  /**
+   * Returns whether Google Drive backup is enabled or not.
+   * 
+   * @return true iff Google Drive backup is enabled
+   */
+  @Override
+  public boolean isDriveEnabled() {
+	return this.isDriveEnabled;
+  }
+  
+  /**
+   * Returns whether Google Drive access permission requests are enabled or not.
+   * 
+   * @return true iff Google Drive access permission requests are enabled
+   */
+  @Override
+  public boolean drivePermissionRequests() {
+	return drivePermissionRequests;
+  }
+  
+  /**
+   * Enables or disables Google Drive access permission requests.
+   * 
+   * @param value true to enable and false to disable access permission requests
+   */
+  public void enableDrivePermissionRequests(boolean value) {
+	this.drivePermissionRequests = value;
+  }
 
   /**
    * Sets the user's email address.
@@ -125,7 +172,7 @@ public class User implements IsSerializable, UserInfoProvider, Serializable {
   public void setUserEmail(String email) {
     this.email = email;
   }
-
+  
   /**
    * fetch the hashed password
    *
@@ -134,7 +181,6 @@ public class User implements IsSerializable, UserInfoProvider, Serializable {
   public String getPassword() {
     return password;
   }
-
 
   /**
    * sets the hashed password.
@@ -334,6 +380,8 @@ public class User implements IsSerializable, UserInfoProvider, Serializable {
     // modify all the places in the source where we create a "User" object. There are
     // only a few places where we assert or read the isReadOnly flag, so we want to
     // limit the places where we have to have knowledge of it to just those places that care
+    retval.enableDrive(isDriveEnabled);
+    retval.enableDrivePermissionRequests(drivePermissionRequests);
     retval.setReadOnly(isReadOnly);
     retval.setBackpackId(this.backPackId);
     retval.name = this.name;

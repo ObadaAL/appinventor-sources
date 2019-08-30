@@ -6,6 +6,7 @@
 
 package com.google.appinventor.server;
 
+import com.google.api.services.drive.Drive;
 import com.google.appinventor.server.util.CacheHeaders;
 import com.google.appinventor.server.util.CacheHeadersImpl;
 import com.google.appinventor.shared.rpc.ServerLayout;
@@ -106,6 +107,15 @@ public class UploadServlet extends OdeServlet {
           uploadResponse = new UploadResponse(UploadResponse.Status.SUCCESS, 0, info);
         } catch (FileImporterException e) {
           uploadResponse = e.uploadResponse;
+        }
+        // save to Google Drive backup folder
+        try {
+        	String userId = userInfoProvider.getUserId();
+        	final Drive drive = GoogleUtils.makeDrive(userId);
+        	DriveUtils.updateOrUploadProjectSourceToFolder(drive, projectName, userId);
+        } catch (Exception e) {
+        	System.out.println("could not upload to Drive");
+        	e.printStackTrace();
         }
       } else if (uploadKind.equals(ServerLayout.UPLOAD_FILE)) {
         uriComponents = uri.split("/", SPLIT_LIMIT_FILE);

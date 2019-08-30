@@ -165,15 +165,18 @@
     <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/log4j/log4j-1.2.16.jar" />  <!-- for keyczar -->
     <!-- GCS Libs -->
     <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/appengine-gcs-client-0.6.jar" />
-    <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/jackson-core-2.1.3.jar" />
-    <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/google-api-client-1.22.0.jar" />
-    <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/google-api-client-appengine-1.22.0.jar" />
-    <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/google-http-client-1.22.0.jar" />
-    <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/google-http-client-appengine-1.22.0.jar" />
+    <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/jackson-core-2.9.6.jar" />
+    <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/google-api-client-1.25.0.jar" />
+    <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/google-api-client-appengine-1.25.0.jar" />
+    <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/google-oauth-client-appengine-1.25.0.jar" />
+    <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/google-http-client-1.25.0.jar" />
+    <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/google-oauth-client-1.25.0.jar" />
+    <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/google-api-services-drive-v3-rev165-1.25.0.jar" />
+    <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/google-http-client-appengine-1.25.0.jar" />
     <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/google-http-client-jackson-1.22.0.jar" />
-    <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/google-http-client-jackson2-1.22.0.jar" />
+    <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/google-http-client-jackson2-1.25.0.jar" />
     <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/google-api-services-storage-v1-rev91-1.22.0.jar" />
-    <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/httpclient-4.0.1.jar" />
+    <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/httpclient-4.5.5.jar" />
     <copy todir="${build.war.dir}/WEB-INF/lib" file="${lib.dir}/gcs/joda-time-2.6.jar" />
     <!-- gwt libs -->
     <copy todir="${build.war.dir}/WEB-INF/lib" file="${gwt.sdk}/gwt-servlet.jar" />
@@ -297,12 +300,12 @@
     <pathelement location="${lib.dir}/responder-iq/responderiq-test.jar" />
     <pathelement location="${lib.dir}/gcs/appengine-gcs-client-0.6.jar" />
     <pathelement location="${lib.dir}/gcs/jackson-core-2.1.3.jar" />
-    <pathelement location="${lib.dir}/gcs/google-api-client-1.22.0.jar" />
-    <pathelement location="${lib.dir}/gcs/google-api-client-appengine-1.22.0.jar" />
-    <pathelement location="${lib.dir}/gcs/google-http-client-1.22.0.jar" />
-    <pathelement location="${lib.dir}/gcs/google-http-client-appengine-1.22.0.jar" />
+    <pathelement location="${lib.dir}/gcs/google-api-client-1.25.0.jar" />
+    <pathelement location="${lib.dir}/gcs/google-api-client-appengine-1.25.0.jar" />
+    <pathelement location="${lib.dir}/gcs/google-http-client-1.25.0.jar" />
+    <pathelement location="${lib.dir}/gcs/google-http-client-appengine-1.25.0.jar" />
     <pathelement location="${lib.dir}/gcs/google-http-client-jackson-1.22.0.jar" />
-    <pathelement location="${lib.dir}/gcs/google-http-client-jackson2-1.22.0.jar" />
+    <pathelement location="${lib.dir}/gcs/google-http-client-jackson2-1.25.0.jar" />
     <pathelement location="${lib.dir}/gcs/google-api-services-storage-v1-rev91-1.22.0.jar" />
     <pathelement location="${lib.dir}/gcs/httpclient-4.0.1.jar" />
     <pathelement location="${lib.dir}/gcs/joda-time-2.6.jar" />

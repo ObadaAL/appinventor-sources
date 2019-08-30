@@ -41,6 +41,7 @@
   <servlet path="/projects" class="com.google.appinventor.server.ProjectServiceImpl" />
   <servlet path="/upload" class="com.google.appinventor.server.UploadServlet" />
   <servlet path="/userinfo" class="com.google.appinventor.server.UserInfoServiceImpl" />
+  <servlet path="/drive" class="com.google.appinventor.server.DriveServiceImpl" />
 
   <!-- srcs -->
   <source path="" includes="simple_components.json" />
@@ -133,8 +134,6 @@
   <extend-property name="locale" values="nl"/>
   <!-- German -->
   <extend-property name="locale" values="de"/>
-  <!-- Polish -->
-  <extend-property name="locale" values="pl"/>
 
   <set-property-fallback name="locale" value="en"/>
   <collapse-all-properties/>

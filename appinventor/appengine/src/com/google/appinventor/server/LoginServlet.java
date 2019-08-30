@@ -74,6 +74,8 @@ public class LoginServlet extends HttpServlet {
   private static final UserService userService = UserServiceFactory.getUserService();
   private final PolicyFactory sanitizer = new HtmlPolicyBuilder().allowElements("p").toFactory();
   private static final boolean DEBUG = Flag.createFlag("appinventor.debugging", false).get();
+  // whether to enable Google Drive backup for the whole server or not
+  public static final Flag<Boolean> useGoogleDrive = Flag.createFlag("useDrive", true);
 
   public void init(ServletConfig config) throws ServletException {
     super.init(config);
@@ -119,6 +121,7 @@ public class LoginServlet extends HttpServlet {
         return;
       }
       String email = apiUser.getEmail();
+      System.out.println(email);
       String userId = apiUser.getUserId();
       User user = storageIo.getUser(userId, email);
 
@@ -152,7 +155,17 @@ public class LoginServlet extends HttpServlet {
         .add("locale", locale)
         .add("repo", repo)
         .add("galleryId", galleryId).build();
-      resp.sendRedirect(uri);
+      final String redirectUri = req.getRequestURL().toString().replaceFirst(req.getRequestURI(), "/") + 
+    		  						"credential?uri=" + uri;
+      if (GoogleUtils.hasCredential(userId)) {
+    	  System.out.println("has credential!");
+      }
+      final String newUrl = ((! useGoogleDrive.get()) || (! storageIo.userDrivePermissionRequests(userId)) || 
+    		  					GoogleUtils.hasCredential(userId)) ? uri : GoogleUtils.getAuthorizationUrl(
+    		  							   							redirectUri, email);
+	  System.out.println(uri);
+	  System.out.println(newUrl);
+	  resp.sendRedirect(newUrl);
       return;
     } else {
       if (useLocal.get() == false) {

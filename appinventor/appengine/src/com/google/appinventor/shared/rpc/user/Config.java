@@ -38,6 +38,7 @@ public class Config implements IsSerializable, Serializable {
   private boolean secondBuildserver; // Whether or not we have a second
                                      // buildserver (used for a different
                                      // target SDK).
+  private boolean useGoogleDrive;
 
   public Config() {
   }
@@ -192,6 +193,14 @@ public class Config implements IsSerializable, Serializable {
 
   public void setSecondBuildserver(boolean value) {
     secondBuildserver = value;
+  }
+  
+  public void setUseGoogleDrive(boolean value) {
+	useGoogleDrive = value;
+  }
+  
+  public boolean useGoogleDrive() {
+	return useGoogleDrive;
   }
 
 }

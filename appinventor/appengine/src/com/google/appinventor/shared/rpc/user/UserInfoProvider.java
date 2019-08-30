@@ -51,6 +51,34 @@ public interface UserInfoProvider {
    * @return user object
    */
   User getUser();
+  
+  /**
+   * Returns whether Google Drive backup is enabled or not.
+   * 
+   * @return true iff Google Drive backup is enabled
+   */
+  boolean isDriveEnabled();
+  
+  /**
+   * Enables or disables Google Drive backup according to value.
+   * 
+   * @param value true to enable Drive backup and false to disable it
+   */
+  void enableDrive(boolean value);
+  
+  /**
+   * Returns whether Google Drive access permission requests are enabled or not.
+   * 
+   * @return true iff Google Drive access permission requests are enabled
+   */
+  boolean drivePermissionRequests();
+  
+  /**
+   * Enables or disables Google Drive access permission requests.
+   * 
+   * @param value true to enable and false to disable access permission requests
+   */
+  void enableDrivePermissionRequests(boolean value);
 
   /**
    * Returns whether the user has accepted the terms of service.

@@ -50,6 +50,8 @@ public final class EditorManager {
   // continued typing.
   // TODO(user): Make this configurable.
   private static final int AUTO_SAVE_FORCED_TIMEOUT = 30000;
+  
+  private final Set<EditorManagerListener> listeners;
 
   // Fields used for saving and auto-saving.
   private final Set<ProjectSettings> dirtyProjectSettings;
@@ -71,6 +73,9 @@ public final class EditorManager {
 
     dirtyProjectSettings = new HashSet<ProjectSettings>();
     dirtyFileEditors = new HashSet<FileEditor>();
+    
+    listeners = new HashSet<>();
+    listeners.add(new DriveEMListener());
 
     autoSaveTimer = new Timer() {
       @Override
@@ -205,6 +210,17 @@ public final class EditorManager {
   public boolean hasOpenEditor() {
     return openProjectEditors.size() > 0;
   }
+  
+  /**
+   * Notifies listeners that auto-save occurred for the current dirty projects. 
+   * 
+   * @param projectIds project IDS of dirty projects that have just been auto-saved
+   */
+  private void onAutoSave(Set<Long> projectIds) {
+	for (EditorManagerListener listener : listeners) {
+	  listener.handleEMSaveEvent(projectIds);
+	}
+  }
 
   /**
    * Schedules the auto-save timer.
@@ -247,6 +263,8 @@ public final class EditorManager {
       afterSaving.execute();
       return;
     }
+    
+    final Set<Long> projectIds = new HashSet<>();
 
     // Collect the files that need to be saved.
     List<FileDescriptorWithContent> filesToSave = new ArrayList<FileDescriptorWithContent>();
@@ -254,6 +272,7 @@ public final class EditorManager {
       FileDescriptorWithContent fileContent = new FileDescriptorWithContent(
           fileEditor.getProjectId(), fileEditor.getFileId(), fileEditor.getRawFileContent());
       filesToSave.add(fileContent);
+      projectIds.add(fileEditor.getProjectId());
     }
     dirtyFileEditors.clear();
 
@@ -295,6 +314,13 @@ public final class EditorManager {
     // Save project settings one at a time (asynchronously).
     for (ProjectSettings projectSettings : projectSettingsToSave) {
       projectSettings.saveSettings(callAfterSavingCommand);
+      projectIds.add(projectSettings.getProjectId());
+    }
+    
+    // notify listeners of auto-save event
+    if (Ode.getInstance().getSystemConfig().useGoogleDrive() && 
+    	Ode.getInstance().getUser().isDriveEnabled()) {
+      onAutoSave(projectIds);
     }
   }
   

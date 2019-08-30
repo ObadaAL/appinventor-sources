@@ -22,6 +22,8 @@ import com.google.appinventor.client.explorer.commands.WaitForBuildResultCommand
 import com.google.appinventor.client.explorer.commands.WarningDialogCommand;
 import com.google.appinventor.client.explorer.project.Project;
 import com.google.appinventor.client.output.OdeLog;
+import com.google.appinventor.client.Ode;
+import com.google.appinventor.client.OdeAsyncCallback;
 import com.google.appinventor.client.tracking.Tracking;
 import com.google.appinventor.client.utils.Downloader;
 import com.google.appinventor.client.widgets.DropDownButton;
@@ -30,6 +32,7 @@ import com.google.appinventor.client.wizards.DownloadUserSourceWizard;
 import com.google.appinventor.client.wizards.KeystoreUploadWizard;
 import com.google.appinventor.client.wizards.ProjectUploadWizard;
 import com.google.appinventor.client.wizards.TemplateUploadWizard;
+import com.google.appinventor.client.wizards.DriveProjectImportWizard;
 import com.google.appinventor.client.wizards.ComponentImportWizard;
 import com.google.appinventor.client.wizards.ComponentUploadWizard;
 import com.google.appinventor.client.wizards.youngandroid.NewYoungAndroidProjectWizard;
@@ -41,6 +44,8 @@ import com.google.appinventor.shared.rpc.project.GallerySettings;
 import com.google.appinventor.shared.rpc.project.ProjectRootNode;
 import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidProjectNode;
 import com.google.appinventor.shared.rpc.user.Config;
+import com.google.appinventor.shared.settings.SettingsConstants;
+import com.google.appinventor.shared.rpc.project.UserProject;
 import com.google.appinventor.shared.storage.StorageUtil;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -60,6 +65,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static com.google.appinventor.client.Ode.MESSAGES;
 
@@ -90,6 +96,7 @@ public class TopToolbar extends Composite {
   private static final String WIDGET_NAME_RESET_BUTTON = "Reset";
   private static final String WIDGET_NAME_HARDRESET_BUTTON = "HardReset";
   private static final String WIDGET_NAME_PROJECT = "Project";
+  private static final String WIDGET_NAME_DRIVE = "Drive";
   private static final String WIDGET_NAME_HELP = "Help";
   private static final String WIDGET_NAME_ABOUT = "About";
   private static final String WIDGET_NAME_LIBRARY = "Library";
@@ -112,6 +119,11 @@ public class TopToolbar extends Composite {
   private static final String WIDGET_NAME_IMPORT_COMPONENT = "ImportComponent";
   private static final String WIDGET_NAME_BUILD_COMPONENT = "BuildComponent";
   private static final String WIDGET_NAME_UPLOAD_COMPONENT = "UploadComponent";
+  private static final String WIDGET_NAME_ENABLE_DRIVE = "EnableDrive";
+  private static final String WIDGET_NAME_DISABLE_DRIVE = "DisableDrive";
+  // for drive backup
+  private static final String WIDGET_NAME_IMPORT_ALL_FROM_DRIVE = "ImportAllProjectsFromDrive";
+  private static final String WIDGET_NAME_IMPORT_PROJECT_FROM_DRIVE = "ImportProjectFromDrive";
 
   private static final String WIDGET_NAME_ADMIN = "Admin";
   private static final String WIDGET_NAME_USER_ADMIN = "UserAdmin";
@@ -121,6 +133,7 @@ public class TopToolbar extends Composite {
   private static final String WINDOW_OPEN_LOCATION = "_ai2";
 
   public DropDownButton fileDropDown;
+  public DropDownButton driveDropDown;
   public DropDownButton connectDropDown;
   public DropDownButton buildDropDown;
   public DropDownButton helpDropDown;
@@ -145,13 +158,14 @@ public class TopToolbar extends Composite {
     /*
      * Layout is as follows:
      * +--------------------------------------------------+
-     * | Project ▾ | Connect ▾ | Build ▾| Help ▾| Admin ▾ |
+     * | Project ▾ | Drive ▾ | Connect ▾ | Build ▾| Help ▾| Admin ▾ |
      * +--------------------------------------------------+
      */
     HorizontalPanel toolbar = new HorizontalPanel();
     toolbar.setVerticalAlignment(HorizontalPanel.ALIGN_MIDDLE);
 
     List<DropDownItem> fileItems = Lists.newArrayList();
+    List<DropDownItem> driveItems = Lists.newArrayList();
     List<DropDownItem> componentItems = Lists.newArrayList();
     List<DropDownItem> connectItems = Lists.newArrayList();
     List<DropDownItem> buildItems = Lists.newArrayList();
@@ -197,6 +211,21 @@ public class TopToolbar extends Composite {
       fileItems.add(new DropDownItem(WIDGET_NAME_DELETE_KEYSTORE, MESSAGES.deleteKeystoreMenuItem(),
           new DeleteKeystoreAction()));
     }
+    
+    // Drive -> {}
+    
+    // button for importing all projects from Drive
+    driveItems.add(new DropDownItem(WIDGET_NAME_IMPORT_ALL_FROM_DRIVE, MESSAGES.importAllProjectsFromDriveMenuItem(), 
+      	  new ImportAllFromDriveAction()));
+    // button for importing a single project from Drive
+    driveItems.add(new DropDownItem(WIDGET_NAME_IMPORT_PROJECT_FROM_DRIVE, MESSAGES.importProjectFromDriveMenuItem(), 
+      	  new ImportProjectFromDriveAction()));
+    // button for giving Drive access permission
+    driveItems.add(new DropDownItem(WIDGET_NAME_ENABLE_DRIVE, MESSAGES.enableDriveMenuItem(), 
+    	  new EnableDriveAction()));
+    // button for denying Drive access
+    driveItems.add(new DropDownItem(WIDGET_NAME_DISABLE_DRIVE, MESSAGES.disableDriveMenuItem(), 
+    	  new DisableDriveAction()));
 
     // Connect -> {Connect to Companion; Connect to Emulator; Connect to USB; Reset Connections}
     connectItems.add(new DropDownItem(WIDGET_NAME_WIRELESS_BUTTON,
@@ -298,6 +327,8 @@ public class TopToolbar extends Composite {
     // Create the TopToolbar drop down menus.
     fileDropDown = new DropDownButton(WIDGET_NAME_PROJECT, MESSAGES.projectsTabName(),
         fileItems, false);
+    driveDropDown = new DropDownButton(WIDGET_NAME_DRIVE, MESSAGES.driveTabName(), 
+    	driveItems, false);
     connectDropDown = new DropDownButton(WIDGET_NAME_CONNECT_TO, MESSAGES.connectTabName(),
         connectItems, false);
     buildDropDown = new DropDownButton(WIDGET_NAME_BUILD, MESSAGES.buildTabName(),
@@ -307,12 +338,14 @@ public class TopToolbar extends Composite {
 
     // Set the DropDown Styles
     fileDropDown.setStyleName("ode-TopPanelButton");
+    driveDropDown.setStyleName("ode-TopPanelButton");
     connectDropDown.setStyleName("ode-TopPanelButton");
     buildDropDown.setStyleName("ode-TopPanelButton");
     helpDropDown.setStyleName("ode-TopPanelButton");
 
     // Add the Buttons to the Toolbar.
     toolbar.add(fileDropDown);
+    toolbar.add(driveDropDown);
     toolbar.add(connectDropDown);
     toolbar.add(buildDropDown);
 
@@ -547,6 +580,151 @@ public class TopToolbar extends Composite {
             ServerLayout.DOWNLOAD_ALL_PROJECTS_SOURCE);
       }
     }
+  }
+  
+  /**
+   * Makes a simple dialog box with an ok button and a message about the number 
+   * of projects that were successfully imported from the user's Google Drive.
+   * 
+   * @param countOfImported number of successfully imported projects
+   * @return dialog box object
+   */
+  private static DialogBox makeDriveImportDialogBox(final int countOfImported) {
+	final DialogBox db = new DialogBox(false, true);
+    db.setText("Drive Import");
+    db.setStyleName("ode-DialogBox");
+    db.setHeight("200px");
+    db.setWidth("400px");
+    db.setGlassEnabled(true);
+    db.setAnimationEnabled(true);
+    db.center();
+
+    VerticalPanel DialogBoxContents = new VerticalPanel();
+    String contents = (countOfImported > 0) ? "Successfully imported " + countOfImported + " projects " + 
+    		  		   "from Google Drive!" : "Could not import any projects from Google Drive";
+    contents += "<BR/><BR/>";
+      
+    HTML message = new HTML(contents);
+
+    SimplePanel holder = new SimplePanel();
+    Button ok = new Button("Ok");
+    ok.addClickListener(new ClickListener() {
+      public void onClick(Widget sender) {
+        db.hide();
+        Ode.getInstance().switchToProjectsView();
+        Ode.getInstance().getTopToolbar().updateFileMenuButtons(0);
+      }
+    });
+    holder.add(ok);
+    DialogBoxContents.add(message);
+    DialogBoxContents.add(holder);
+    db.setWidget(DialogBoxContents);
+      
+    return db;
+  }
+  
+  // for multiple project Drive backup
+  private static class ImportAllFromDriveAction implements Command {
+	@Override
+	public void execute() {
+	  final Ode ode = Ode.getInstance();
+	  ode.getDriveService().importAllFromDrive(
+    		new OdeAsyncCallback<Set<UserProject>>() {
+    		  @Override
+			  public void onSuccess(Set<UserProject> userProjects) {
+				  int countOfImported = userProjects.size();
+				  for (UserProject userProject : userProjects) {
+				    ode.getProjectManager().addProject(userProject);
+				  }
+				  final DialogBox db = makeDriveImportDialogBox(countOfImported);
+				   db.show();
+			  }
+      });
+	}
+  }
+  
+  // for single project Drive backup
+  private static class ImportProjectFromDriveAction implements Command {
+	@Override
+    public void execute() {
+      new DriveProjectImportWizard().center();
+    }
+  }
+  
+  // for enabling Drive backup
+  private class EnableDriveAction implements Command {
+	@Override
+	public void execute() {
+	  final Ode ode = Ode.getInstance();
+	  
+	  // Best way I could think of to get baseUrl. Feel free to change it
+	  final String url = Window.Location.getHref();
+	  final String baseUrl; 
+	  int slashCount = 0; 
+	  int splitIndex = 0;
+	  
+	  for (int i = 0; i < url.length(); i++) {
+		// for loop to find the location of the 3rd slash in the url
+		if (url.charAt(i) == '/') {
+		  splitIndex = i;
+		  slashCount++;
+		}
+		if (slashCount == 3) {
+		  break;
+		}
+	  }
+	  
+	  baseUrl = (slashCount == 3) ? url.substring(0, splitIndex) : url;
+	  
+	  Window.alert(url + "\n" + baseUrl);
+	  final String lastUserLocale = ode.getUserSettings()
+			  						   .getSettings(SettingsConstants.USER_GENERAL_SETTINGS)
+			  						   .getPropertyValue(SettingsConstants.USER_LAST_LOCALE);
+	  ode.getDriveService().drivePermissionUrl(lastUserLocale, baseUrl, 
+			  new OdeAsyncCallback<String>() {
+			  	@Override
+			  	public void onSuccess(String redirectUrl) {
+			  	  if (! redirectUrl.equals("")) {
+			  		// redirect to new url to enable Drive
+			  		Window.Location.assign(redirectUrl);
+			  	  } else {
+			  		// otherwise, valid tokens or credentials found
+			  		ode.getUser().enableDrive(true);
+			  		ode.getUser().enableDrivePermissionRequests(false);
+	  				Window.alert("Successfully enabled drive backup.\n" + 
+				  				 "You can disable it at any time through the Drive menu.");
+	  				driveDropDown.setItemEnabled(MESSAGES.importAllProjectsFromDriveMenuItem(), true);
+	  				driveDropDown.setItemEnabled(MESSAGES.importProjectFromDriveMenuItem(), true);
+				    driveDropDown.setItemEnabled(MESSAGES.enableDriveMenuItem(), false);
+				    driveDropDown.setItemEnabled(MESSAGES.disableDriveMenuItem(), true);
+	  			  
+			  	  }
+			  	}
+      });
+	}
+  }
+  
+  // for disabling Drive backup
+  private class DisableDriveAction implements Command {
+	@Override
+	public void execute() {
+	  final Ode ode = Ode.getInstance();
+	  ode.getDriveService().enableDrive(false, 
+	  		  new OdeAsyncCallback<Void>() {
+	  			@Override
+	  			public void onSuccess(Void nothing) {
+	  			  ode.getUser().enableDrive(false);
+	  			  Window.alert("Successfully disabled drive backup.\n" + 
+	  					  	   "You can re-enable it at any time through the Drive menu.");
+	  			  if (! ode.getUser().isDriveEnabled()) {
+	  				driveDropDown.setItemEnabled(MESSAGES.importAllProjectsFromDriveMenuItem(), false);
+				    driveDropDown.setItemEnabled(MESSAGES.importProjectFromDriveMenuItem(), false);
+				    driveDropDown.setItemEnabled(MESSAGES.enableDriveMenuItem(), true);
+				    driveDropDown.setItemEnabled(MESSAGES.disableDriveMenuItem(), false);
+	  			  }
+	  			}
+      		  });
+	}
   }
 
   private static class ImportProjectAction implements Command {
@@ -983,12 +1161,15 @@ public class TopToolbar extends Composite {
       // This may be too simple
       return;
     }
+    
+    final Ode ode = Ode.getInstance();
+    
     if (view == 0) {  // We are in the Projects view
       fileDropDown.setItemEnabled(MESSAGES.deleteProjectButton(), false);
       fileDropDown.setItemEnabled(MESSAGES.deleteProjectMenuItem(),
-          Ode.getInstance().getProjectManager().getProjects() == null);
+          ode.getProjectManager().getProjects() == null);
       fileDropDown.setItemEnabled(MESSAGES.exportAllProjectsMenuItem(),
-          Ode.getInstance().getProjectManager().getProjects().size() > 0);
+          ode.getProjectManager().getProjects().size() > 0);
       fileDropDown.setItemEnabled(MESSAGES.exportProjectMenuItem(), false);
       fileDropDown.setItemEnabled(MESSAGES.saveMenuItem(), false);
       fileDropDown.setItemEnabled(MESSAGES.saveAsMenuItem(), false);
@@ -998,7 +1179,7 @@ public class TopToolbar extends Composite {
     } else { // We have to be in the Designer/Blocks view
       fileDropDown.setItemEnabled(MESSAGES.deleteProjectButton(), true);
       fileDropDown.setItemEnabled(MESSAGES.exportAllProjectsMenuItem(),
-          Ode.getInstance().getProjectManager().getProjects().size() > 0);
+          ode.getProjectManager().getProjects().size() > 0);
       fileDropDown.setItemEnabled(MESSAGES.exportProjectMenuItem(), true);
       fileDropDown.setItemEnabled(MESSAGES.saveMenuItem(), true);
       fileDropDown.setItemEnabled(MESSAGES.saveAsMenuItem(), true);
@@ -1006,6 +1187,15 @@ public class TopToolbar extends Composite {
       buildDropDown.setItemEnabled(MESSAGES.showBarcodeMenuItem(), true);
       buildDropDown.setItemEnabled(MESSAGES.downloadToComputerMenuItem(), true);
     }
+    final boolean isUseDriveEnabled = ode.getUser().isDriveEnabled();
+    driveDropDown.setItemEnabled(MESSAGES.importAllProjectsFromDriveMenuItem(), 
+    								ode.getSystemConfig().useGoogleDrive() && isUseDriveEnabled);
+    driveDropDown.setItemEnabled(MESSAGES.importProjectFromDriveMenuItem(), 
+    								ode.getSystemConfig().useGoogleDrive() && isUseDriveEnabled);
+    driveDropDown.setItemEnabled(MESSAGES.enableDriveMenuItem(), 
+    								ode.getSystemConfig().useGoogleDrive() && ! isUseDriveEnabled);
+    driveDropDown.setItemEnabled(MESSAGES.disableDriveMenuItem(), 
+    								ode.getSystemConfig().useGoogleDrive() && isUseDriveEnabled);
     updateKeystoreFileMenuButtons(true);
   }
 

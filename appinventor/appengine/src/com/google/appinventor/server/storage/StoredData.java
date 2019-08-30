@@ -45,6 +45,11 @@ public class StoredData {
 
     // User settings
     public String settings;
+    
+    // Whether Google Drive backup is enabled or not
+    public boolean isDriveEnabled;
+    // Whether Drive access permission requests are enabled or not upon login
+    public boolean drivePermissionRequests;
 
     // Has user accepted terms of service?
     boolean tosAccepted;

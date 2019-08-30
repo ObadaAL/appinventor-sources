@@ -123,6 +123,40 @@ public interface StorageIo {
    * @return name
    */
   String getUserName(String userId);
+  
+  /**
+   * Enables or disables Google Drive backup for user with ID userId according 
+   * to value. 
+   * 
+   * @param value true to enable Drive backup, false otherwise
+   */
+  void enableUserDrive(String userId, boolean value);
+  
+  /**
+   * Returns whether Google Drive backup is enabled for user with ID userId.
+   * 
+   * @param userId user ID
+   * @return true iff Drive backup is enabled for user with ID userId
+   */
+  boolean getUserDriveStatus(String userId);
+  
+  /**
+   * Enable or disables Google Drive access permission requests for user with ID 
+   * userId.
+   * 
+   * @param value true to enable and false to disable drive access requests.
+   * @param userId user ID
+   */
+  void enableUserDrivePermissionRequests(String userId, boolean value);
+  
+  /**
+   * Returns whether the user with ID userId has Drive access permission requests 
+   * enabled or not. 
+   * 
+   * @param userId user ID
+   * @return true iff Drive access permission requests are enabled for user
+   */
+  boolean userDrivePermissionRequests(String userId);
 
   /**
    * Returns a string with the user's name.

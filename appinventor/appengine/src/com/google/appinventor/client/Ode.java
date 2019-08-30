@@ -74,6 +74,8 @@ import com.google.appinventor.shared.rpc.project.GallerySettings;
 import com.google.appinventor.shared.rpc.project.ProjectRootNode;
 import com.google.appinventor.shared.rpc.project.ProjectService;
 import com.google.appinventor.shared.rpc.project.ProjectServiceAsync;
+import com.google.appinventor.shared.rpc.project.DriveService;
+import com.google.appinventor.shared.rpc.project.DriveServiceAsync;
 import com.google.appinventor.shared.rpc.project.UserProject;
 import com.google.appinventor.shared.rpc.project.GalleryService;
 import com.google.appinventor.shared.rpc.project.GalleryServiceAsync;
@@ -255,6 +257,9 @@ public class Ode implements EntryPoint {
 
   // Web service for project related information
   private final ProjectServiceAsync projectService = GWT.create(ProjectService.class);
+  
+  // Web Service for managing drive operations
+  private final DriveServiceAsync driveService = GWT.create(DriveService.class);
 
   // Web service for gallery related information
   private final GalleryServiceAsync galleryService = GWT.create(GalleryService.class);
@@ -851,8 +856,21 @@ public class Ode implements EntryPoint {
 
             // Initialize UI
             initializeUi();
-
+            
             topPanel.showUserEmail(user.getUserEmail());
+            
+            // tell users how to manually enable Drive
+            if (config.useGoogleDrive() && (! user.isDriveEnabled()) && user.drivePermissionRequests()) {
+              Window.confirm("You can manually enable Drive from the top toolbar at any time");
+              user.enableDrivePermissionRequests(false);
+          	  driveService.enableDrivePermissionRequests(false, 
+          			new OdeAsyncCallback<Void>() {
+          		  		@Override
+          		  		public void onSuccess(Void nothing) {
+          		  		  // not sure what to add here
+          		  		}
+          	  		});
+            }
           }
         });
       }
@@ -1331,6 +1349,16 @@ public class Ode implements EntryPoint {
    */
   public ProjectServiceAsync getProjectService() {
     return projectService;
+  }
+  
+  /**
+   * Gets an instance of the drive import service for managing Drive operations 
+   * with the server side.
+   * 
+   * @return drive web service instance
+   */
+  public DriveServiceAsync getDriveService() {
+	  return driveService;
   }
 
   /**

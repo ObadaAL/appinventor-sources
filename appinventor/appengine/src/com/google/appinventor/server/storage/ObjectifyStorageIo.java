@@ -319,6 +319,8 @@ public class ObjectifyStorageIo implements  StorageIo {
           user.setIsAdmin(userData.isAdmin);
           user.setSessionId(userData.sessionid);
           user.setPassword(userData.password);
+          user.enableDrive(userData.isDriveEnabled);
+          user.enableDrivePermissionRequests(userData.drivePermissionRequests);
         }
       }, false);                // Transaction not needed. If we fail there is nothing to rollback
     } catch (ObjectifyException e) {
@@ -356,6 +358,8 @@ public class ObjectifyStorageIo implements  StorageIo {
     User retUser = new User(user.id, email, user.name, user.link, 0, user.tosAccepted,
       false, user.type, user.sessionid);
     retUser.setPassword(user.password);
+    retUser.enableDrive(user.isDriveEnabled);
+    retUser.enableDrivePermissionRequests(user.drivePermissionRequests);
     return retUser;
   }
 
@@ -374,6 +378,8 @@ public class ObjectifyStorageIo implements  StorageIo {
     userData.link = "";
     userData.emaillower = email == null ? "" : emaillower;
     userData.emailFrequency = User.DEFAULT_EMAIL_NOTIFICATION_FREQUENCY;
+    userData.isDriveEnabled = false;
+    userData.drivePermissionRequests = true;
     datastore.put(userData);
     return userData;
   }
@@ -433,7 +439,46 @@ public class ObjectifyStorageIo implements  StorageIo {
     } catch (ObjectifyException e) {
       throw CrashReport.createAndLogError(LOG, null, collectUserErrorInfo(userId), e);
     }
-
+  }
+  
+  @Override
+  public void enableUserDrive(final String userId, final boolean value) {
+	try {
+	  runJobWithRetries(new JobRetryHelper() {
+		@Override
+		public void run(Objectify datastore) {
+		  String cachekey = User.usercachekey + "|" + userId;
+		  memcache.delete(cachekey); // Flush cached copy prior to update
+		  UserData userData = datastore.find(userKey(userId));
+		  if (userData != null) {
+			userData.isDriveEnabled = value;
+			datastore.put(userData);
+		  }
+		}
+	  }, true);
+	} catch (ObjectifyException e) {
+	  throw CrashReport.createAndLogError(LOG, null, collectUserErrorInfo(userId), e);
+	}
+  }
+  
+  @Override
+  public void enableUserDrivePermissionRequests(final String userId, final boolean value) {
+	try {
+	  runJobWithRetries(new JobRetryHelper() {
+		@Override
+		public void run(Objectify datastore) {
+		  String cachekey = User.usercachekey + "|" + userId;
+		  memcache.delete(cachekey); // Flush cached copy prior to update
+		  UserData userData = datastore.find(userKey(userId));
+		  if (userData != null) {
+			userData.drivePermissionRequests = value; 
+			datastore.put(userData);
+		  }
+		}
+	  }, true);
+	} catch (ObjectifyException e) {
+	  throw CrashReport.createAndLogError(LOG, null, collectUserErrorInfo(userId), e);
+	}
   }
 
   @Override
@@ -535,6 +580,48 @@ public class ObjectifyStorageIo implements  StorageIo {
       throw CrashReport.createAndLogError(LOG, null, collectUserErrorInfo(userId), e);
     }
     return settings.t;
+  }
+  
+  @Override
+  public boolean getUserDriveStatus(final String userId) {
+	final Result<Boolean> isDriveEnabled = new Result<Boolean>();
+	try {
+	  runJobWithRetries(new JobRetryHelper() {
+		@Override
+		public void run(Objectify datastore) {
+		  UserData userData = datastore.find(UserData.class, userId);
+		  if (userData != null) {
+			isDriveEnabled.t = userData.isDriveEnabled;
+		  } else {
+			isDriveEnabled.t = false;
+		  }
+		}
+	  }, true);
+	} catch (ObjectifyException e) {
+	  throw CrashReport.createAndLogError(LOG, null, collectUserErrorInfo(userId), e);
+	}
+	return isDriveEnabled.t;
+  }
+  
+  @Override
+  public boolean userDrivePermissionRequests(final String userId) {
+	final Result<Boolean> drivePermissionRequests = new Result<Boolean>();
+	try {
+	  runJobWithRetries(new JobRetryHelper() {
+		@Override
+		public void run(Objectify datastore) {
+		  UserData userData = datastore.find(UserData.class, userId);
+		  if (userData != null) {
+			drivePermissionRequests.t = userData.drivePermissionRequests;
+		  } else {
+			drivePermissionRequests.t = true;
+		  }
+		}
+	  }, true);
+	} catch (ObjectifyException e) {
+	  throw CrashReport.createAndLogError(LOG, null, collectUserErrorInfo(userId), e);
+	}
+	return drivePermissionRequests.t;
   }
 
   @Override
