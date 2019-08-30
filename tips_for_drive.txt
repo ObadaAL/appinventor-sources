@@ -1,0 +1,16 @@
+In order to locally test Drive backup for App Inventor, you need to create a Google project on Google Cloud Platform 
+in order to obtain the necessary credentials (client ID and secret) for accessing users' Drive. 
+
+After creating and obtaining the necessary credentials, go to: https://console.developers.google.com/apis/credentials, 
+click on your project name and add the necessary redirect URIs:
+		http://localhost:8888	
+		http://localhost:8888/credential?uri=/?locale=pt	
+		http://localhost:8888/credential?uri=/?locale=en	
+		http://localhost:8888/credential?uri=/?locale=zh_CN
+
+Make sure that the port number matches the one you use when you run your local server.
+
+After creating the project and obtaining the necessary credentials, go to GoogleUtils.java in the appengine/../server package and either replace the credential variables values - as well as the application name - or create flags with the necessary 
+values and the specified flag names in GoogleUtils.java.
+
+Finally, in the same package (appengine/../server) make sure that the useGoogleDrive flag is set to true in LoginServlet.java.
